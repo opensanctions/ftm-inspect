@@ -15,6 +15,13 @@ dependencies = [
     "click",
 ]
 
+[dependency-groups]
+dev = [
+    "mypy",
+    "prek",
+    "pytest",
+]
+
 [project.scripts]
 ftm-stmt = "ftm_stmt:cli"
 
