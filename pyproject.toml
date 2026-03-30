@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ftm-inspect"
+version = "0.1.0"
+description = "CLI tools for working with FtM statements."
+requires-python = ">= 3.12"
+dependencies = [
+    "followthemoney",
+    "fsspec[http]",
+    "pandas",
+    "textual",
+    "click",
+]
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "prek",
+    "pytest",
+]
+
+[project.scripts]
+ftm-stmt = "ftm_stmt:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ftm_stmt"]
