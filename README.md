@@ -28,14 +28,14 @@ ftm-stmt diff https://data.opensanctions.org/datasets/latest/us_ofac_sdn/stateme
 If you're running zavod locally and want to diff your local output against the published archive, use `zavod archive url` to resolve the URL for you:
 
 ```bash
-ftm-stmt diff $(zavod archive url statements --latest datasets/us/ofac/us_ofac_sdn.yml) \
+ftm-stmt diff $(zavod archive url statements.pack --latest datasets/us/ofac/us_ofac_sdn.yml) \
               data/datasets/us_ofac_sdn/statements.pack
 ```
 
 If your dataset name is in `$DATASET`:
 
 ```bash
-ftm-stmt diff $(zavod archive url statements --latest datasets/**/$DATASET.yml) \
+ftm-stmt diff $(zavod archive url statements.pack --latest datasets/**/$DATASET.yml) \
               data/datasets/$DATASET/statements.pack
 ```
 
