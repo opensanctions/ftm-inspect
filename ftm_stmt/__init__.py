@@ -199,10 +199,11 @@ def format_diff(result: DiffResult, left_label: str, right_label: str) -> str:
                 meta_parts.append(f"original_value: {row.original_value}")
             if row.dataset:
                 meta_parts.append(f"dataset: {row.dataset}")
-            if row.first_seen:
-                meta_parts.append(f"first_seen: {row.first_seen}")
-            if row.last_seen:
-                meta_parts.append(f"last_seen: {row.last_seen}")
+            # They're just annoying in the diff
+            # if row.first_seen:
+            #     meta_parts.append(f"first_seen: {row.first_seen}")
+            # if row.last_seen:
+            #     meta_parts.append(f"last_seen: {row.last_seen}")
             if row.lang:
                 meta_parts.append(f"lang: {row.lang}")
             if row.external:
