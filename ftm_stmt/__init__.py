@@ -150,6 +150,8 @@ def compute_diff(left: pd.DataFrame, right: pd.DataFrame) -> DiffResult:
 
     removed["marker"] = "-"
     added["marker"] = "+"
+    removed["stmt_id"] = removed.index
+    added["stmt_id"] = added.index
 
     if len(removed) + len(added) > 0:
         t1 = time.perf_counter()
@@ -162,10 +164,10 @@ def compute_diff(left: pd.DataFrame, right: pd.DataFrame) -> DiffResult:
         )
         df.drop(columns=["_marker_ord"], inplace=True)
         # Ensure marker column comes first for readability
-        df = df[["marker", *_DF_TEXT_COLS, "external"]]
+        df = df[["marker", "stmt_id", *_DF_TEXT_COLS, "external"]]
         log.info("diff sort+concat: %.3fs", time.perf_counter() - t1)
     else:
-        df = pd.DataFrame(columns=["marker", *_DF_TEXT_COLS, "external"])
+        df = pd.DataFrame(columns=["marker", "stmt_id", *_DF_TEXT_COLS, "external"])
 
     return DiffResult(
         df=df,
@@ -173,6 +175,43 @@ def compute_diff(left: pd.DataFrame, right: pd.DataFrame) -> DiffResult:
         added_count=len(added),
         unchanged_count=unchanged_count,
     )
+
+
+def format_diff(result: DiffResult, left_label: str, right_label: str) -> str:
+    """Format a DiffResult as a unified-diff-style string.
+
+    Each entity gets its own hunk header, and each changed statement is
+    rendered as ``prop: value [metadata...]``.
+    """
+    lines: list[str] = [f"--- {left_label}", f"+++ {right_label}"]
+    if result.df.empty:
+        return "\n".join(lines) + "\n"
+
+    for entity_id, group in result.df.groupby("entity_id", sort=False):
+        schema = group.iloc[0]["schema"]
+        eid = str(entity_id)
+        lines.append(f"@@ -0,0 +0,0 @@ entity={eid} schema={schema}")
+        for row in group.itertuples(index=False):
+            meta_parts: list[str] = []
+            if row.origin:
+                meta_parts.append(f"origin: {row.origin}")
+            if row.original_value:
+                meta_parts.append(f"original_value: {row.original_value}")
+            if row.dataset:
+                meta_parts.append(f"dataset: {row.dataset}")
+            # They're just annoying in the diff
+            # if row.first_seen:
+            #     meta_parts.append(f"first_seen: {row.first_seen}")
+            # if row.last_seen:
+            #     meta_parts.append(f"last_seen: {row.last_seen}")
+            if row.lang:
+                meta_parts.append(f"lang: {row.lang}")
+            if row.external:
+                meta_parts.append("external: true")
+            meta = f" [{', '.join(meta_parts)}]" if meta_parts else ""
+            lines.append(f"{row.marker}{row.prop}: {row.value}{meta}")
+
+    return "\n".join(lines) + "\n"
 
 
 class _SearchScreen(ModalScreen[str | None]):
@@ -447,7 +486,7 @@ def cli() -> None:
 @click.option(
     "--output",
     "-o",
-    type=click.Choice(["tui", "csv"]),
+    type=click.Choice(["tui", "csv", "diff"]),
     default="tui",
     help="Output format: interactive TUI (default) or CSV to stdout.",
 )
@@ -469,6 +508,10 @@ def diff_cmd(left_path: str, right_path: str, output: str) -> None:
         import sys
 
         result.df.to_csv(sys.stdout, index=False)
+    elif output == "diff":
+        import sys
+
+        sys.stdout.write(format_diff(result, left_path, right_path))
     else:
         app = _DiffApp(
             left_label=str(left_path),

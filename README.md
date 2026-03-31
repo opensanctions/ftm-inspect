@@ -39,6 +39,17 @@ ftm-stmt diff $(zavod archive url statements.pack --latest datasets/**/$DATASET.
               data/datasets/$DATASET/statements.pack
 ```
 
+### Diff output with delta
+
+The `-o diff` flag outputs a standard unified diff that you can pipe to [delta](https://github.com/dandavison/delta) (`brew install git-delta`) for syntax-highlighted output:
+
+```bash
+ftm-stmt diff -o diff $(zavod archive url statements.pack --latest datasets/**/$DATASET.yml) \
+                      data/datasets/$DATASET/statements.pack | delta
+```
+
+![delta diff output](docs/screenshots/delta-diff-output.png)
+
 ## TUI keybindings
 
 | Key | Action |
